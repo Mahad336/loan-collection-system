@@ -102,6 +102,7 @@ Rules are stored in the database and evaluated by priority:
 - **Daily Case Creation:** Cron at 1:30 AM creates cases for delinquent loans without an open case
 - **Daily DPD Recalculation:** Cron at 2 AM updates DPD and auto-escalates unassigned cases
 - **Optimistic Locking:** `expectedVersion` query param on assignment for conflict detection
+- **Redis Caching:** Case list and KPIs cached with event-driven invalidation
 
 ## Project Structure
 
@@ -110,6 +111,7 @@ Rules are stored in the database and evaluated by priority:
 │   ├── api/          # NestJS
 │   │   ├── prisma/
 │   │   └── src/
+│   │       ├── cache/
 │   │       ├── cases/
 │   │       ├── actions/
 │   │       ├── assignments/

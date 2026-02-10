@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CasesRepository } from '../cases/cases.repository';
 import { AssignmentsService } from '../assignments/assignments.service';
+import { CASE_EVENTS } from '../constants/events';
 
 @Injectable()
 export class DpdSchedulerService {
@@ -10,6 +12,7 @@ export class DpdSchedulerService {
   constructor(
     private readonly casesRepository: CasesRepository,
     private readonly assignmentsService: AssignmentsService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
@@ -36,6 +39,10 @@ export class DpdSchedulerService {
           }
         }
       }
+    }
+
+    if (updated > 0 || escalated > 0) {
+      this.eventEmitter.emit(CASE_EVENTS.MUTATED);
     }
 
     this.logger.log(`DPD job complete: ${updated} cases updated, ${escalated} auto-assigned`);

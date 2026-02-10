@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../database/prisma.service';
 import { RulesService } from '../rules/rules.service';
 import { RuleEngineService } from '../rules/rule-engine.service';
+import { CASE_EVENTS } from '../constants/events';
 import type { AssignmentResultDto } from '@collections/shared';
 
 const ASSIGN_GROUP_TO_AGENT: Record<string, string> = {
@@ -16,6 +18,7 @@ export class AssignmentsService {
     private readonly prisma: PrismaService,
     private readonly rulesService: RulesService,
     private readonly ruleEngine: RuleEngineService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async runAssignment(caseId: number, expectedVersion?: number): Promise<AssignmentResultDto> {
@@ -100,6 +103,8 @@ export class AssignmentsService {
           reason: result.reason,
         },
       });
+
+      this.eventEmitter.emit(CASE_EVENTS.MUTATED);
 
       return {
         caseId,
