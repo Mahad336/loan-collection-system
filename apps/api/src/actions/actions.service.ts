@@ -10,13 +10,24 @@ export class ActionsService {
     const c = await this.prisma.case.findUnique({ where: { id: caseId } });
     if (!c) throw new NotFoundException(`Case ${caseId} not found`);
 
-    return this.prisma.actionLog.create({
-      data: {
-        caseId,
-        type: dto.type,
-        outcome: dto.outcome,
-        notes: dto.notes ?? null,
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const actionLog = await tx.actionLog.create({
+        data: {
+          caseId,
+          type: dto.type,
+          outcome: dto.outcome,
+          notes: dto.notes ?? null,
+        },
+      });
+
+      if (dto.outcome === 'PAID') {
+        await tx.case.update({
+          where: { id: caseId },
+          data: { status: 'RESOLVED' },
+        });
+      }
+
+      return actionLog;
     });
   }
 }
