@@ -28,8 +28,13 @@ export class RuleEngineService {
 
       matchedRules.push(rule.ruleId);
 
-      // Override rules only overwrite the fields they set (e.g. assignedTo override),
-      // not clear all previous actions (stage from DPD rules should persist)
+      // When overridePrevious is true, clear the fields this rule sets before applying.
+      // This makes override explicit: e.g. RISK_GT_80_OVERRIDE discards DPD-based assignment.
+      if (rule.overridePrevious) {
+        for (const action of rule.actions) {
+          delete actions[action.field];
+        }
+      }
       for (const action of rule.actions) {
         actions[action.field] = action.value;
       }
