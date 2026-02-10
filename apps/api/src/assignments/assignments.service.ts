@@ -33,24 +33,9 @@ export class AssignmentsService {
         );
       }
 
-      if (c.assignedTo) {
-        const decision = await tx.ruleDecision.findFirst({
-          where: { caseId },
-          orderBy: { createdAt: 'desc' },
-        });
-        return {
-          caseId: c.id,
-          stage: c.stage as AssignmentResultDto['stage'],
-          assignedTo: c.assignedTo,
-          version: c.version,
-          decision: {
-            matchedRules: (decision?.matchedRules as string[]) ?? [],
-            reason: decision?.reason ?? 'Previously assigned',
-          },
-          alreadyAssigned: true,
-        };
-      }
-
+      // Always re-evaluate rules so assignment reflects current risk score and DPD.
+      // If risk score is updated later, re-running assignment will pick up the change
+      // (e.g. RISK_GT_80_OVERRIDE assigning to SeniorAgent).
       const rules = await this.rulesService.getRules();
       const context = {
         case: { dpd: c.dpd },
@@ -70,6 +55,28 @@ export class AssignmentsService {
         assignedTo = String(result.actions.assignedTo);
       } else if (result.actions.assignGroup) {
         assignedTo = ASSIGN_GROUP_TO_AGENT[String(result.actions.assignGroup)] ?? String(result.actions.assignGroup);
+      }
+
+      const computedMatchesCurrent =
+        stage === c.stage &&
+        (assignedTo ?? '') === (c.assignedTo ?? '');
+
+      if (computedMatchesCurrent) {
+        const decision = await tx.ruleDecision.findFirst({
+          where: { caseId },
+          orderBy: { createdAt: 'desc' },
+        });
+        return {
+          caseId,
+          stage: c.stage as AssignmentResultDto['stage'],
+          assignedTo: c.assignedTo ?? '',
+          version: c.version,
+          decision: {
+            matchedRules: (decision?.matchedRules as string[]) ?? result.matchedRules,
+            reason: decision?.reason ?? result.reason,
+          },
+          alreadyAssigned: true,
+        };
       }
 
       await tx.case.update({
