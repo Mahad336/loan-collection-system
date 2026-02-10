@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id        Int     @id @default(autoincrement())
+  name      String
+  phone     String
+  email     String
+  country   String
+  riskScore Int     @map("risk_score")
+  loans     Loan[]
+  cases     Case[]
+
+  @@map("customers")
+}
+
+model Loan {
+  id          Int      @id @default(autoincrement())
+  customerId  Int      @map("customer_id")
+  principal   Float
+  outstanding Float
+  dueDate     DateTime @map("due_date")
+  status      String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  cases       Case[]
+
+  @@index([customerId])
+  @@map("loans")
+}
+
+model Case {
+  id         Int       @id @default(autoincrement())
+  customerId Int       @map("customer_id")
+  loanId     Int       @map("loan_id")
+  dpd        Int       @default(0)
+  stage      String    @default("SOFT")
+  status     String    @default("OPEN")
+  assignedTo String?   @map("assigned_to")
+  version    Int       @default(1)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  loan       Loan      @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  actionLogs ActionLog[]
+  ruleDecisions RuleDecision[]
+
+  @@index([status, stage, dpd])
+  @@index([assignedTo])
+  @@map("cases")
+}
+
+model ActionLog {
+  id        Int      @id @default(autoincrement())
+  caseId    Int      @map("case_id")
+  type      String
+  outcome   String
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, createdAt])
+  @@map("action_logs")
+}
+
+model Rule {
+  ruleId          String   @id @map("rule_id")
+  priority        Int
+  enabled         Boolean  @default(true)
+  condition       Json
+  actions         Json
+  overridePrevious Boolean @default(false) @map("override_previous")
+
+  @@index([enabled, priority])
+  @@map("rules")
+}
+
+model RuleDecision {
+  id          Int      @id @default(autoincrement())
+  caseId      Int      @map("case_id")
+  matchedRules Json    @map("matched_rules")
+  reason      String
+  createdAt   DateTime @default(now()) @map("created_at")
+  case        Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId])
+  @@map("rule_decisions")
+}

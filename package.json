@@ -1,0 +1,22 @@
+{
+  "name": "collections-case-manager",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build:shared": "npm run build -w @collections/shared",
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:api": "npm run start:dev -w @collections/api",
+    "dev:web": "npm run dev -w @collections/web",
+    "build": "npm run build:shared && npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

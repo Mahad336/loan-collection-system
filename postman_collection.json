@@ -1,0 +1,70 @@
+{
+  "info": {
+    "name": "Collections Case Manager",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Case",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customerId\": 1,\n  \"loanId\": 1\n}"
+        },
+        "url": "{{baseUrl}}/cases"
+      }
+    },
+    {
+      "name": "List Cases",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/cases?page=1&limit=10"
+      }
+    },
+    {
+      "name": "Get Case by ID",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/cases/1"
+      }
+    },
+    {
+      "name": "Get KPIs",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/cases/kpis"
+      }
+    },
+    {
+      "name": "Add Action",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"CALL\",\n  \"outcome\": \"PROMISE_TO_PAY\",\n  \"notes\": \"Customer promised to pay on Friday\"\n}"
+        },
+        "url": "{{baseUrl}}/cases/1/actions"
+      }
+    },
+    {
+      "name": "Run Assignment",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/cases/1/assign"
+      }
+    },
+    {
+      "name": "Get PDF Notice",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/cases/1/notice.pdf"
+      }
+    }
+  ],
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:3001/api"}
+  ]
+}
