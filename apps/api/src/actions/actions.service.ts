@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { CASE_EVENTS } from '../constants/events';
 import type { CreateActionDto } from '@collections/shared';
@@ -15,7 +16,7 @@ export class ActionsService {
     const c = await this.prisma.case.findUnique({ where: { id: caseId } });
     if (!c) throw new NotFoundException(`Case ${caseId} not found`);
 
-    const actionLog = await this.prisma.$transaction(async (tx) => {
+    const actionLog = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const log = await tx.actionLog.create({
         data: {
           caseId,

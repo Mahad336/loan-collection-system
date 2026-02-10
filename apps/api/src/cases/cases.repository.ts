@@ -107,7 +107,7 @@ export class CasesRepository {
       select: { loanId: true },
       distinct: ['loanId'],
     });
-    const loanIdsWithCase = new Set(loansWithOpenCase.map((c) => c.loanId));
+    const loanIdsWithCase = new Set(loansWithOpenCase.map((c: { loanId: number }) => c.loanId));
 
     const DELINQUENT_STATUSES = ['DELINQUENT'];
     const loans = await this.prisma.loan.findMany({
@@ -143,7 +143,7 @@ export class CasesRepository {
 
     const avgDpd =
       openCases.length > 0
-        ? openCases.reduce((s, c) => s + c.dpd, 0) / openCases.length
+        ? openCases.reduce((s: number, c: { dpd: number }) => s + c.dpd, 0) / openCases.length
         : 0;
 
     return {

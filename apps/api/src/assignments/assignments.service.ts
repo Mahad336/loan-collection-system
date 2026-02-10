@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { RulesService } from '../rules/rules.service';
 import { RuleEngineService } from '../rules/rule-engine.service';
@@ -22,7 +23,7 @@ export class AssignmentsService {
   ) {}
 
   async runAssignment(caseId: number, expectedVersion?: number): Promise<AssignmentResultDto> {
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const c = await tx.case.findUnique({
         where: { id: caseId },
         include: { customer: true, loan: true },

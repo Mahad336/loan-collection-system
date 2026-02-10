@@ -20,7 +20,7 @@ export class RulesService {
       orderBy: { priority: 'asc' },
     });
 
-    this.cachedRules = rows.map((r) => ({
+    const rules: RuleDefinition[] = rows.map((r) => ({
       ruleId: r.ruleId,
       priority: r.priority,
       enabled: r.enabled,
@@ -29,7 +29,8 @@ export class RulesService {
       overridePrevious: r.overridePrevious,
     }));
 
-    return this.cachedRules;
+    this.cachedRules = rules;
+    return rules;
   }
 
   invalidateCache(): void {
